@@ -1,14 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import Flow from './App';
-import reportWebVitals from './reportWebVitals';
+import GraphFlow from './flow/App';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Flow />
+    <GraphFlow />
   </React.StrictMode>,
   document.getElementById('root')
 );
-
-reportWebVitals(console.log);
