@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import ReactFlow, {
   addEdge,
   updateEdge,
@@ -17,6 +18,10 @@ import ReactFlow, {
   ReactFlowInstance,
   ReactFlowProvider
 } from 'react-flow-renderer';
+import GraphLibrary from '../graph/GraphLibrary';
+import GraphHeader from '../graph/GraphHeader';
+
+import Toolbar from './Toolbar'; // TODO
 import KnowMiniMap from '../controls/KnowMiniMap';
 import UpdateNodeControl from '../controls/UpdateNodeControl';
 import ColorSelectorNode from '../custom-nodes/ColorSelectorNode';
@@ -42,21 +47,14 @@ const edgeTypes = {
   floating: FloatingEdge,
 };
 
-import { getNodes, getEdges } from '../knowledge/api';
-import { CSSProperties } from 'react';
+import { getGraph, updateNodePos } from '../knowledge/api';
 
-import { createNodesAndEdges } from '../utils';
-
-const buttonWrapperStyle: CSSProperties = {
-  position: 'absolute',
-  left: 10,
-  top: 10,
-  zIndex: 4,
-  textTransform: 'none',
-};
-
+// Event
 const onNodeDragStart = (event: any, node: Node) => console.log('drag start', node);
-const onNodeDragStop =(event: any, node: Node) => console.log('drag stop', node);
+const onNodeDragStop =(event: any, node: Node) => {
+  updateNodePos(node.id, node.position);
+  console.log('drag stop', node) 
+};
 const onNodeClick = (event: any, node: Node)  => console.log('click node', node);
 const onPaneClick = (event: any) => console.log('onPaneClick', event);
 const onPaneScroll = (event: any) => console.log('onPaneScroll', event);
@@ -70,8 +68,8 @@ const onConnectEnd = (event: any) => console.log('on connect end', event);
 let id = 0;
 const getId = () => `node_${id++}`;
 
-// 随机生成节点
-const { nodes: initialNodes, edges: initialEdges } = createNodesAndEdges();
+// 默认加载的节点数据
+const { nodes: initialNodes, edges: initialEdges } = { nodes: [], edges: [] };
 
 function GraphFlow() {
   const reactFlowWrapper = useRef<HTMLInputElement>(null);
@@ -79,10 +77,9 @@ function GraphFlow() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>();
-
   const [isSelectable, setIsSelectable] = useState(false);
-  const [isDraggable, setIsDraggable] = useState(false);
-  const [isConnectable, setIsConnectable] = useState(false);
+  const [isDraggable, setIsDraggable] = useState(true);
+  const [isConnectable, setIsConnectable] = useState(true);
   const [zoomOnScroll, setZoomOnScroll] = useState(false);
   const [panOnScroll, setPanOnScroll] = useState(false);
   const [panOnScrollMode, setPanOnScrollMode] = useState(PanOnScrollMode.Free);
@@ -92,15 +89,24 @@ function GraphFlow() {
   const [captureZoomScroll, setCaptureZoomScroll] = useState(false);
   const [captureElementClick, setCaptureElementClick] = useState(false);
 
+  // 通过 Query 参数，动态加载 Graph 数据
+  const [searchParams, setSearchParams] = useSearchParams();
+  const graphId: string | null = searchParams.get('graphId');
+
   const onInit = (_reactFlowInstance: ReactFlowInstance) =>  {
     console.log('🚀 GraphFlow loaded success :', _reactFlowInstance);
     setReactFlowInstance(_reactFlowInstance);
+
+    getGraph(graphId as string, (graph: any) => {
+      console.log('get data')
+      setNodes(graph.nodes);
+      setEdges(graph.edges);
+    });
   }
 
-  const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => 
-      addEdge({...connection, animated: true, type: 'floating', markerEnd: { type: MarkerType.Arrow } }, eds)),
-      []
+  const onConnect = useCallback((connection: Connection) => setEdges((eds) => 
+    addEdge({...connection, animated: true, type: 'floating', markerEnd: { type: MarkerType.Arrow } }, eds)),
+    []
   );
 
   // gets called after end of edge gets dragged to another source or target
@@ -125,23 +131,23 @@ function GraphFlow() {
       );
     };
 
-    const setBgColorNode: Node = { 
-      id: 'Color',
-      type: 'selectorNode',
-      data: { onChange: onChange, color: initBgColor },
-      style: { border: '1px solid #777', padding: 10 },
-      position: { x: -200, y: 200 }
-    }
+    // const setBgColorNode: Node = { 
+    //   id: 'Color',
+    //   type: 'selectorNode',
+    //   data: { onChange: onChange, color: initBgColor },
+    //   style: { border: '1px solid #777', padding: 10 },
+    //   position: { x: -200, y: 200 }
+    // }
 
-    const dragTestNode: any = {
-      id: 'drag',
-      type: 'dragHandleNode',
-      dragHandle: '.custom-drag-handle',
-      style: { border: '1px solid #ddd', padding: '20px 40px' },
-      position: { x: 0, y: 400 },
-    }
+    // const dragTestNode: any = {
+    //   id: 'drag',
+    //   type: 'dragHandleNode',
+    //   dragHandle: '.custom-drag-handle',
+    //   style: { border: '1px solid #ddd', padding: '20px 40px' },
+    //   position: { x: 0, y: 400 },
+    // }
 
-    setNodes(nodes.concat([setBgColorNode, dragTestNode]));
+    // setNodes(nodes.concat([setBgColorNode, dragTestNode]));
 
     setEdges(edges);
   }, []);
@@ -150,7 +156,7 @@ function GraphFlow() {
     padding: 0.2
   }
   // ColorSelectorNode change bgColor
-  const initBgColor = '#444';
+  const initBgColor = '#f5f5f5';
   const [bgColor, setBgColor] = useState(initBgColor);
   const connectionLineStyle = { stroke: '#fff' };
   const snapGrid: SnapGrid = [20, 20];
@@ -160,6 +166,7 @@ function GraphFlow() {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
+
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
@@ -187,26 +194,13 @@ function GraphFlow() {
     },
     [reactFlowInstance]
   );
-  
-  const updatePos = useCallback(() => {
-    setNodes((nds) => {
-      return nds.map((node) => {
-        return {
-          ...node,
-          position: {
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-          },
-        };
-      });
-    });
-  }, []);
-
 
   return (
     <div className="providerflow">
       <ReactFlowProvider>
+        <GraphLibrary />
         <div className="reactflow-wrapper" ref={reactFlowWrapper}>
+          <GraphHeader />
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -224,9 +218,9 @@ function GraphFlow() {
             connectionLineStyle={connectionLineStyle}
             snapToGrid={true}
             snapGrid={snapGrid}
-            defaultZoom={0.8}
-            minZoom={0.2}
-            maxZoom={4}
+            // defaultZoom={0.8}
+            // minZoom={0.2}
+            // maxZoom={4}
             attributionPosition="bottom-right"
             onConnectStart={onConnectStart}
             onConnectStop={onConnectStop}
@@ -247,7 +241,19 @@ function GraphFlow() {
             onPaneClick={captureZoomClick ? onPaneClick : undefined}
             onPaneScroll={captureZoomScroll ? onPaneScroll : undefined}
             onPaneContextMenu={captureZoomClick ? onPaneContextMenu : undefined} >
-              <div style={buttonWrapperStyle}>
+              <KnowMiniMap />
+              <Controls />
+            {/*  <UpdateNodeControl 
+                setNodes={setNodes}
+                setEdges={setEdges} />*/}
+            {/*  <SaveControl 
+                rfInstance={reactFlowInstance}
+                setNodes={setNodes}
+                setEdges={setEdges} />*/}
+
+              <Background color="#fff" gap={8} />
+
+              <div className="toolbar">
                 <div>
                   <label htmlFor="draggable">
                     <input
@@ -384,20 +390,6 @@ function GraphFlow() {
                   </label>
                 </div>
               </div>
-              <KnowMiniMap />
-              <Controls />
-              <UpdateNodeControl 
-                setNodes={setNodes}
-                setEdges={setEdges} />
-              <SaveControl 
-                rfInstance={reactFlowInstance}
-                setNodes={setNodes}
-                setEdges={setEdges} />
-
-              <button onClick={updatePos} style={{ position: 'absolute', right: 200, top: 10, zIndex: 4 }}>
-                change pos
-              </button>
-              <Background color="#aaa" gap={16} />
           </ReactFlow>
         </div>
         <Sidebar nodes={nodes} setNodes={setNodes} />
@@ -407,3 +399,4 @@ function GraphFlow() {
 }
 
 export default GraphFlow;
+

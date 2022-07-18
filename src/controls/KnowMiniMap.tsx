@@ -3,11 +3,11 @@ import { MiniMap, Node } from 'react-flow-renderer';
 const nodeColor = (node: Node) => {
     switch (node.type) {
         case 'input':
-          return 'red';
+          return '#eee';
         case 'default':
           return '#00ff00';
         case 'output':
-          return 'rgb(0,0,255)';
+          return '#444';
         default:
           return '#eee';
       }
@@ -16,8 +16,8 @@ const nodeColor = (node: Node) => {
 const nodeStrokeColor: any = (node: Node) => {
     if (node.style?.background) return node.style.background;
     if (node.type === 'input') return '#0041d0';
-    if (node.type === 'output') return '#ff0072';
-    if (node.type === 'default') return '#1a192b';
+    if (node.type === 'output') return '#000000';
+    if (node.type === 'default') return '#f5f5f9';
 
     return '#eee';
 }

@@ -1,66 +1,82 @@
 .providerflow {
-    flex-direction: column;
-    display: flex;
-    flex-grow: 1;
-    height: 100%;
-  }
-  
-  .providerflow aside {
-    border-left: 1px solid #eee;
-    padding: 15px 10px;
-    font-size: 12px;
-    background: #fff;
-  }
-  
-  .providerflow aside .description {
-    margin-bottom: 10px;
-  }
-  
-  .providerflow aside .title {
-    font-weight: 700;
-    margin-bottom: 5px;
-  }
-  
-  .providerflow aside .transform {
-    margin-bottom: 20px;
-  }
-  
-  .providerflow .reactflow-wrapper {
-    flex-grow: 1;
-  }
-  
-  .providerflow .selectall {
-    margin-top: 10px;
-  }
+  flex-direction: row;
+  display: flex;
+  flex-grow: 1;
+  height: 100%;
+}
 
-  .dndnode {
-    height: 20px;
-    padding: 4px;
-    border: 1px solid #1a192b;
-    border-radius: 2px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: grab;
-  }
-  
-  .dndnode.input {
-    border-color: #0041d0;
-  }
-  
-  .dndnode.output {
-    border-color: #ff0072;
-  }
-  
-  @media screen and (min-width: 768px) {
-    .providerflow {
-      flex-direction: row;
-    }
-  
-    .providerflow aside {
-      width: 20%;
-      max-width: 250px;
-      height: 200px;
-    }
-  }
+.providerflow aside {
+  z-index: 10;
+  position: fixed;
+  right: 16px;
+  top: 60px;
+  border-left: 1px solid #eee;
+  font-size: 12px;
+  background: #fff;
+  width: 240px;
+  height: calc(100vh - 300px);
+  overflow-y: hidden;
+  border-radius: 10px;
+  padding: 8px 16px;
+  display: none;
+}
+
+.providerflow aside .nav-tabs {
+  height: 32px;
+  border-bottom: 1px solid #eee;
+  margin-bottom:  16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.providerflow aside .nav-tabs .tab {
+  text-align: center;
+  width: 25%;
+  padding: 8px 0;
+}
+
+.providerflow aside .nav-tabs .tab.active {
+  border-bottom: 2px solid black;
+}
+
+.providerflow aside .description {
+  margin-bottom: 10px;
+}
+
+.providerflow aside .title {
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.providerflow aside .transform {
+  margin-bottom: 20px;
+}
+
+.providerflow .reactflow-wrapper {
+  flex-grow: 1;
+}
+
+.providerflow .selectall {
+  margin-top: 10px;
+}
+
+.dndnode {
+  height: 20px;
+  padding: 4px;
+  border: 1px solid #1a192b;
+  border-radius: 2px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: grab;
+}
+
+.dndnode.input {
+  border-color: #0041d0;
+}
+
+.dndnode.output {
+  border-color: #ff0072;
+}

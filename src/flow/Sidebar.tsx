@@ -52,7 +52,21 @@ export default ({ nodes, setNodes }: any) => {
 
   return (
     <aside>
-      <div className="description">
+      <div className="nav-tabs">
+        <div className="tab active">
+          New
+        </div>
+        <div className="tab">
+          Style
+        </div>
+        <div className="tab">
+          Graph
+        </div>
+        <div className="tab">
+          Share
+        </div>
+      </div>
+     {/* <div className="description">
         This is an example of how you can access the internal state outside of the ReactFlow component.
       </div>
       <div className="title">Zoom & pan transform</div>
@@ -77,7 +91,7 @@ export default ({ nodes, setNodes }: any) => {
       <button onClick={zoomInNode}>zoom in</button>
       <button onClick={zoomOutNode}>zoom out</button>
 
-      <hr />
+      <hr />*/}
       <div className="description">You can drag these nodes to the pane on the right.</div>
       <div className="dndnode input" onDragStart={(event) => onDragStart(event, 'input')} draggable>
         Input Node

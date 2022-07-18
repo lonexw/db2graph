@@ -1,11 +1,13 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { render } from 'react-dom';
+import { BrowserRouter } from "react-router-dom";
 import './index.css';
 import GraphFlow from './flow/App';
 
-ReactDOM.render(
+
+render(
   <React.StrictMode>
-    <GraphFlow />
+    <BrowserRouter><GraphFlow /></BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')
 );
